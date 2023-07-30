@@ -1,20 +1,19 @@
 'use client';
 
-import useQueryBuilder from '@/lib/useQueryBuilder';
+import { makeQuery } from '@/src/makeQuery';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 export default function Home() {
   const router = useRouter();
-  const query = useSearchParams();
-  const makeQuery = useQueryBuilder();
+  const qparams = useSearchParams();
   const [addSpice, setAddSpice] = useState<string>('');
   const [remSpice, setRemSpice] = useState<string>('');
 
   const handler = (action: 'add' | 'rem', spice: string) => {
     {
       if (spice === '') return alert('no spice specified');
-      const route = makeQuery({
+      const route = makeQuery(qparams.toString(), {
         [action]: {
           spice,
         },
@@ -47,7 +46,7 @@ export default function Home() {
       <button onClick={() => handler('rem', '*')}>Remove all spices</button>
 
       <div>
-        {query.getAll('spice').map((spice) => (
+        {qparams.getAll('spice').map((spice) => (
           <p key={spice}>{spice}</p>
         ))}
       </div>
