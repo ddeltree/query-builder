@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>makeQuery</title>
+  <script type="module" defer>
+    import { makeQuery } from './makeQuery.js';
+    const addSpiceInput = document.getElementById('add-spice-input'),
+      addSpiceButton = document.getElementById('add-spice-button'),
+      remSpiceInput = document.getElementById('rem-spice-input'),
+      remSpiceButton = document.getElementById('rem-spice-button'),
+      remAllSpicesButton = document.getElementById('rem-all-spices');
+    addSpiceButton?.addEventListener('click', () => handler('add'));
+    remSpiceButton?.addEventListener('click', () => handler('rem'));
+    remAllSpicesButton?.addEventListener('click', () => handler('rem', true));
+    function handler(action, isRemoveAll) {
+      const query = window.location.search.slice(1);
+      const spice = (action === 'add' ? addSpiceInput : remSpiceInput)?.value;
+      const newQuery = makeQuery(query, {
+        [action]: {
+          spice: (isRemoveAll && '*') || [spice],
+        },
+      });
+      window.location.href = window.location.pathname += '?' + newQuery;
+    }
+  </script>
+  <script type="module" src="./makeQuery.js" defer></script>
+</head>
+
+<body>
+  <div>
+    <input id="add-spice-input" type="text">
+    <button id="add-spice-button">Add spice</button>
+  </div>
+
+  <div>
+    <input id="rem-spice-input" type="text">
+    <button id="rem-spice-button">Remove spice</button>
+  </div>
+
+  <button id="rem-all-spices">Remove all spices</button>
+</body>
+
+</html>
