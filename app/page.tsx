@@ -18,7 +18,8 @@ export default function Home() {
           spice,
         },
       });
-      router.push(route);
+      const loc = window.location.pathname;
+      router.push(loc + '?' + route);
       action === 'add' ? setAddSpice('') : setRemSpice('');
     }
   };
@@ -46,8 +47,8 @@ export default function Home() {
       <button onClick={() => handler('rem', '*')}>Remove all spices</button>
 
       <div>
-        {qparams.getAll('spice').map((spice) => (
-          <p key={spice}>{spice}</p>
+        {qparams.getAll('spice').map((spice, i) => (
+          <p key={i}>{spice}</p>
         ))}
       </div>
     </main>
