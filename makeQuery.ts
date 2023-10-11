@@ -6,17 +6,18 @@ export function makeQuery(
   const currentSearchParams = new URLSearchParams(currentQuery);
   const result1 = from(currentSearchParams).remove(paramsToRemove);
   const result2 = from(result1).add(paramsToAdd);
+  result2.sort();
   return result2.toString();
 }
 
-function from(currentSearchParams: URLSearchParams) {
-  currentSearchParams = cloneSearchParams(currentSearchParams);
-  const currentKeys = Array.from(currentSearchParams.keys());
-  const resultantSearchParams = cloneSearchParams(currentSearchParams);
+function from(previousSearchParams: URLSearchParams) {
+  previousSearchParams = cloneSearchParams(previousSearchParams);
+  const previousKeys = Array.from(previousSearchParams.keys());
+  const resultSearchParams = cloneSearchParams(previousSearchParams);
   return {
     remove: function (paramsToRemove: ParamsToRemove) {
-      for (const key of currentKeys) {
-        const currentValues = currentSearchParams.getAll(key);
+      for (const key of previousKeys) {
+        const currentValues = resultSearchParams.getAll(key);
         let updatedValues = [...currentValues];
 
         if (Object.hasOwn(paramsToRemove, key)) {
@@ -35,11 +36,11 @@ function from(currentSearchParams: URLSearchParams) {
         }
         this.update(key, updatedValues);
       }
-      return resultantSearchParams;
+      return resultSearchParams;
     },
     add: function (paramsToAdd: ParamsToAdd) {
       for (const key of Object.keys(paramsToAdd)) {
-        const currentValues = currentSearchParams.getAll(key);
+        const previousValues = previousSearchParams.getAll(key);
         let valuesToAdd: string[] = [];
         if (Object.hasOwn(paramsToAdd, key)) {
           valuesToAdd =
@@ -47,15 +48,15 @@ function from(currentSearchParams: URLSearchParams) {
               ? (paramsToAdd[key] as string[])
               : [paramsToAdd[key] as string];
         }
-        const updatedValues = [...currentValues, ...valuesToAdd];
+        const updatedValues = [...previousValues, ...valuesToAdd];
         this.update(key, updatedValues);
       }
-      return resultantSearchParams;
+      return resultSearchParams;
     },
     update: function (key: string, values: string[]) {
-      resultantSearchParams.delete(key);
+      resultSearchParams.delete(key);
       values.forEach((q) => {
-        resultantSearchParams.append(key, q);
+        resultSearchParams.append(key, q);
       });
     },
   };
