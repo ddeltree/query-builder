@@ -1,42 +1,64 @@
 /** Adds or/and-then removes the specified params and returns the current route with the resultant query */
 export function makeQuery(
   currentQuery: string,
-  { add: toAdd = {}, rem: toRem = {} }: ParamsOptions,
+  { add: paramsToAdd = {}, rem: paramsToRemove = {} }: ParamsOptions,
 ) {
   const currentSearchParams = new URLSearchParams(currentQuery);
+  const result1 = from(currentSearchParams).remove(paramsToRemove);
+  const result2 = from(result1).add(paramsToAdd);
+  return result2.toString();
+}
+
+function from(currentSearchParams: URLSearchParams) {
+  currentSearchParams = cloneSearchParams(currentSearchParams);
+  const currentKeys = Array.from(currentSearchParams.keys());
   const resultantSearchParams = cloneSearchParams(currentSearchParams);
-  const allKeyNames = [
-    ...Array.from(currentSearchParams.keys()),
-    ...Object.keys(toAdd),
-  ];
+  return {
+    remove: function (paramsToRemove: ParamsToRemove) {
+      for (const key of currentKeys) {
+        const currentValues = currentSearchParams.getAll(key);
+        let updatedValues = [...currentValues];
 
-  for (const key of allKeyNames) {
-    const currentValues = currentSearchParams.getAll(key);
-    let valuesToAdd: string[] = [];
-    if (Object.hasOwn(toAdd, key)) {
-      valuesToAdd =
-        typeof toAdd[key] === 'object'
-          ? (toAdd[key] as string[])
-          : [toAdd[key] as string];
-    }
-    let updatedValues = [...currentValues];
-
-    if (Object.hasOwn(toRem, key)) {
-      let rm = toRem[key];
-      if (rm === '*') updatedValues = [];
-      else {
-        if (typeof rm === 'string') rm = [rm];
-        updatedValues = updatedValues.filter((v) => !rm.includes(v));
+        if (Object.hasOwn(paramsToRemove, key)) {
+          const remValue = paramsToRemove[key];
+          let remValues: string[];
+          if (remValue === '*') {
+            updatedValues = [];
+            remValues = [];
+          } else if (typeof remValue === 'string') {
+            remValues = [remValue];
+          } else {
+            remValues = remValue;
+          }
+          const index = updatedValues.findIndex((v) => remValues.includes(v));
+          if (index !== -1) updatedValues.splice(index, 1);
+        }
+        this.update(key, updatedValues);
       }
-    }
-    updatedValues = [...updatedValues, ...valuesToAdd];
-
-    resultantSearchParams.delete(key);
-    updatedValues.forEach((q) => {
-      resultantSearchParams.append(key, q);
-    });
-  }
-  return resultantSearchParams.toString();
+      return resultantSearchParams;
+    },
+    add: function (paramsToAdd: ParamsToAdd) {
+      for (const key of Object.keys(paramsToAdd)) {
+        const currentValues = currentSearchParams.getAll(key);
+        let valuesToAdd: string[] = [];
+        if (Object.hasOwn(paramsToAdd, key)) {
+          valuesToAdd =
+            typeof paramsToAdd[key] === 'object'
+              ? (paramsToAdd[key] as string[])
+              : [paramsToAdd[key] as string];
+        }
+        const updatedValues = [...currentValues, ...valuesToAdd];
+        this.update(key, updatedValues);
+      }
+      return resultantSearchParams;
+    },
+    update: function (key: string, values: string[]) {
+      resultantSearchParams.delete(key);
+      values.forEach((q) => {
+        resultantSearchParams.append(key, q);
+      });
+    },
+  };
 }
 
 function cloneSearchParams(params: URLSearchParams) {
@@ -44,6 +66,8 @@ function cloneSearchParams(params: URLSearchParams) {
 }
 
 type ParamsOptions = {
-  add?: Record<string, string[] | string>;
-  rem?: Record<string, string[] | (string & {}) | '*'>;
+  add?: ParamsToAdd;
+  rem?: ParamsToRemove;
 };
+type ParamsToRemove = Record<string, string[] | (string & {}) | '*'>;
+type ParamsToAdd = Record<string, string[] | string>;
