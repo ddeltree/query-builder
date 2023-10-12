@@ -1,5 +1,5 @@
 /** Adds or/and-then removes the specified params and returns the current route with the resultant query */
-export function makeQuery(
+export default function makeQuery(
   currentQuery: string,
   { add: paramsToAdd = {}, rem: paramsToRemove = {} }: ParamsOptions,
 ) {
@@ -32,7 +32,10 @@ function from(previousSearchParams: URLSearchParams) {
             remValues = remValue;
           }
           const index = updatedValues.findIndex((v) => remValues.includes(v));
-          if (index !== -1) updatedValues.splice(index, 1);
+          if (index !== -1) {
+            updatedValues.splice(index, 1);
+            delete paramsToRemove[key]; // remove key only once
+          }
         }
         this.update(key, updatedValues);
       }
