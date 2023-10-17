@@ -12,7 +12,7 @@ export default function makeQuery(
 
 function from(previousSearchParams: URLSearchParams) {
   previousSearchParams = cloneSearchParams(previousSearchParams);
-  const previousKeys = Array.from(previousSearchParams.keys());
+  const previousKeys = new Set(previousSearchParams.keys());
   const resultSearchParams = cloneSearchParams(previousSearchParams);
   return {
     remove: function (paramsToRemove: ParamsToRemove) {
@@ -31,12 +31,9 @@ function from(previousSearchParams: URLSearchParams) {
             remValues = new Set(remValue);
           }
           remValues.forEach((toRemove) => {
-            const index = updatedValues.findIndex(
-              (value) => value === toRemove,
-            );
-            updatedValues.splice(index);
+            const i = updatedValues.findIndex((value) => value === toRemove);
+            updatedValues.splice(i, 1);
           });
-          // updatedValues = updatedValues.filter((v) => !remValues.has(v));
         }
         this.update(key, updatedValues);
       }
