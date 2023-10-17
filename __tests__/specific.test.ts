@@ -3,7 +3,7 @@ import makeQuery from '../makeQuery';
 
 test('adding and removing nothing results in the initial query', () => {
   const initialQuery = 'a=1&b=2&c=3';
-  const addRemArgs: AddRemArgs = [
+  const addRemArgs = [
     [undefined, undefined],
     [undefined, {}],
     [{}, undefined],
@@ -74,5 +74,3 @@ test('REMOVE_ALL (*) can remove both duplicated and unique entries', () => {
   });
   expect(newQuery).toBe('a=1');
 });
-
-type AddRemArgs = (Record<string, string> | undefined)[][];
