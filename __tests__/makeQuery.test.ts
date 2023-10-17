@@ -33,7 +33,7 @@ test('adding and removing the same inexistent entry differs from the initial que
     add: { prop: 'value' },
     rem: { prop: 'value' },
   });
-  expect(newQuery).not.toBe(initialQuery);
+  expect(newQuery).toBe(initialQuery + '&prop=value');
 });
 
 test('removing inexistent entry does nothing', () => {

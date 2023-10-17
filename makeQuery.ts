@@ -17,25 +17,26 @@ function from(previousSearchParams: URLSearchParams) {
   return {
     remove: function (paramsToRemove: ParamsToRemove) {
       for (const key of previousKeys) {
-        const currentValues = resultSearchParams.getAll(key);
-        let updatedValues = [...currentValues];
+        const previousValues = resultSearchParams.getAll(key);
+        let updatedValues = [...previousValues];
 
         if (Object.hasOwn(paramsToRemove, key)) {
           const remValue = paramsToRemove[key];
-          let remValues: string[];
+          let remValues = new Set<string>();
           if (remValue === '*') {
             updatedValues = [];
-            remValues = [];
           } else if (typeof remValue === 'string') {
-            remValues = [remValue];
+            remValues.add(remValue);
           } else {
-            remValues = remValue;
+            remValues = new Set(remValue);
           }
-          const index = updatedValues.findIndex((v) => remValues.includes(v));
-          if (index !== -1) {
-            updatedValues.splice(index, 1);
-            delete paramsToRemove[key]; // remove key only once
-          }
+          remValues.forEach((toRemove) => {
+            const index = updatedValues.findIndex(
+              (value) => value === toRemove,
+            );
+            updatedValues.splice(index);
+          });
+          // updatedValues = updatedValues.filter((v) => !remValues.has(v));
         }
         this.update(key, updatedValues);
       }
